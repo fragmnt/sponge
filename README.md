@@ -16,7 +16,7 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 ## Features
 
 - [x] Resuable page components
-- [_] Short link generator
+- [x] Short link generator
 
 ## Components
 
