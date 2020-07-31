@@ -23,4 +23,4 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 
 ## License
 
-Sponge is released under the Apache 2.0 license. [See LICENSE]() for details.
+Sponge is released under the Apache 2.0 license. [See LICENSE](https://github.com/fragmnt/sponge/blob/master/LICENSE) for details.
