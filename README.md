@@ -5,6 +5,8 @@
 ### Simple, mobile and modular e-commerce shop pages for social media that are shareable with a single link.
 </div>
 
+[![Devpost](https://img.shields.io/badge/devpost-%40fragment-blue)](https://devpost.com/fragment?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav)
+
 ## Overview 👋
 
 ### What is Sponge?
