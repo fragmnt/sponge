@@ -7,4 +7,20 @@
 
 ## Overview 
 
+### What is Sponge?
+
 Sponge is an open-source mobile ecommerce service for social media, layered on top of PayID
+
+## Features
+
+## Components
+
+## Docs
+
+## Hosted vs. Self-Hosted
+
+## Installation
+
+## License
+
+Sponge is released under the Apache 2.0 license. [See LICENSE]() for details.
