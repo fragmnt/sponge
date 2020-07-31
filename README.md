@@ -1,0 +1,1 @@
+## Sponge — an open-source mobile ecommerce service for social media, layered on top of PayID
