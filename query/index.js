@@ -22,11 +22,12 @@ type Storefront {
 
 const resolvers = {
     Query: {
-
+        merchant: (_, { id }) => `merchant.id = ${id}`,
+        storefront: (_, { id }) => `storefront.id = ${id}`
     },
 };
 
-const server = new GraphQLServer({ typeDefs });
+const server = new GraphQLServer({ typeDefs, resolvers });
 
 server.start(() => {
     console.log("server is running on localhost:4000");
