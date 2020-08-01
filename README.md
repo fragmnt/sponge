@@ -18,7 +18,16 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 - [x] Resuable page components
 - [x] Short link generator
 
-## Components
+## Hierarchy
+
+1. `landing` - marketing site
+2. `interface` - web-app
+3. `query` - graphql server
+4. `api` - rest api server
+5. `services` - redis, minio, payid
+6. `database` - mongodb
+7. `infra` - vps, ubuntu server distro
+
 
 ## Hosted vs. Self-Hosted
 
