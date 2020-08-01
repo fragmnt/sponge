@@ -6,9 +6,12 @@
   "license": "BSD3",
   "dependencies": {
     "react": "^16.13.1",
+    "react-albus": "^2.0.0",
     "react-dom": "^16.13.1",
+    "react-responsive-carousel": "^3.2.9",
     "react-scripts": "^3.4.1",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "redux-form": "^8.3.6"
   },
   "scripts": {
     "start": "",

@@ -4,6 +4,8 @@ const crypto = require('crypto-js');
 const db = require('./src/plugins/mongo');
 const env = process.env;
 
+// SERVICES (minio, redis, payid)
+
 const routes = require('./src/routes');
 
 // ..configurations, fastify plugins
