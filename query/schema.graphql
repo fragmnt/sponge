@@ -42,3 +42,7 @@ type Rating {
 enum Category {
     
 }
+
+type Mutation {
+    createMerchant{}: Merchant!
+}
