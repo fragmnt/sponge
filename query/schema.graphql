@@ -1,0 +1,44 @@
+type Query {
+    product(id: ID!): Product!
+    customer(id: ID!): Customer!
+    merchant(id: ID!): Merchant!
+}
+
+type Merchant {
+    id: ID!
+}
+
+type Customer {
+    id: ID!
+    address1: String
+    address2: String
+    city: String
+    country: String
+    email: String
+    payID: String!
+    postalCode: String
+    password: String
+    ratings: [Rating!]!
+}
+
+type Product {
+    id: ID!
+    createdAt: String!
+    description: String!
+    image: String
+    name: String!
+    price: Float!
+    ratings: [Rating!]!
+    type: String!
+}
+
+type Rating {
+    id: ID!
+    count: Int!
+    product: Product!
+    customer: Customer!
+}
+
+enum Category {
+    
+}
