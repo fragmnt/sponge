@@ -1,42 +1,23 @@
-const m = require('minio');
 require('dotenv').config();
+const m = require('minio');
+const env = process.env;
+const fp = require('fastify-plugin');
 
-var mc = new m.Client({
-    endPoint: process.env.MINIO_URL, // url
-    port: parseInt(process.env.MINIO_PORT),
-    useSSL: true,
-    accessKey: process.env.MINIO_ACCESS_KEY,
-    secretKey: process.env.MINIO_SECRET_KEY
-});
+async function minioConnector(ffy, opts, done) {
+    try {
+        const mc = new m.Client({
+            endPoint: env.MINIO_URL, // url
+            port: parseInt(env.MINIO_PORT),
+            useSSL: true,
+            accessKey: env.MINIO_ACCESS_KEY,
+            secretKey: env.MINIO_SECRET_KEY
+        });
+        console.log('.: Service :: Minio S3 is connected...');
+        ffy.decorate('minio', mc);
+    } catch (err) {
+        console.log(".::::." + err);
+    }
+    done();
+};
 
-// var buffer = "";
-// var file = Buffer.from(buffer, 'hex');
-
-console.log(mc);
-
-var fileName = "icon.png";
-var fileLocation = `./${fileName}`;
-var bucketNameInput = "dogg"
-
-const uploadFile = async () => {
-    
-    await mc.makeBucket(bucketNameInput.toString(), 'us-east-1', (err) => {
-        if (err) return console.log(err);
-        console.log('bucket created successfully');
-    });
-    
-    var metadata = {
-        'Content-Type': 'application/octet-stream',
-        'X-Amz-Meta-Testing': 1234,
-        'example': 5678
-    };
-    
-    // Using fPutObject API upload your file to the bucket europetrip.
-    await mc.fPutObject(bucketNameInput, fileName, fileLocation, metadata, (err, etag) => {
-      if (err) return console.log(err)
-      console.log('File uploaded successfully.');
-      console.log(etag);
-    });
-}
-
-uploadFile();
+module.exports = fp(minioConnector);

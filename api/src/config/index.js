@@ -2,5 +2,11 @@ require('dotenv').config();
 const env = process.env;
 
 module.exports = {
-    port: env.PORT,
+    development: {},
+    staging: {},
+    qa: {},
+    testing: {},
+    production: {
+        port: env.PORT,
+    }
 }

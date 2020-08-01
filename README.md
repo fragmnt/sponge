@@ -27,6 +27,7 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 2. `interface` - web-app
 3. `query` - graphql server
 4. `api` - rest api server
+4.5 - `workers` - bull
 5. `services` - redis, minio, payid
 6. `database` - mongodb
 7. `infra` - vps, ubuntu server distro
@@ -34,11 +35,19 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 
 ## Hosted vs. Self-Hosted
 
+...
+
 ## Installation
+
+...
 
 #### Dependencies
 
+...
+
 ## Docs
+
+To view documentation, [see the directory docs](https://github.com/fragmnt/sponge/tree/master/docs) for more information.
 
 ## License
 

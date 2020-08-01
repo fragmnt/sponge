@@ -1,16 +1,26 @@
 require('dotenv').config();
+const ffySession = require('fastify-session');
+const ffyCookie = require('fastify-cookie');
+const ffyMultipart = require('fastify-formbody');
+
 const ffy = require('fastify')({ logger: true });
-const crypto = require('crypto-js');
-const db = require('./src/plugins/mongo');
+const mongo = require('./src/plugins/mongo');
+const minio = require('./src/plugins/minio');
+
 const env = process.env;
 
-// SERVICES (minio, redis, payid)
+/* SERVICES (minio, redis, payid)
+..configurations, fastify plugins */
+
+ffy.register(ffyCookie);
+ffy.register(ffyMultipart);
+ffy.register(ffySession, {
+    secret: env.CLIENT_SECRET
+});
+ffy.register(mongo);
+ffy.register(minio);
 
 const routes = require('./src/routes');
-
-// ..configurations, fastify plugins
-ffy.register(db());
-
 routes.forEach((route, index) => {
     ffy.route(route);
 });
