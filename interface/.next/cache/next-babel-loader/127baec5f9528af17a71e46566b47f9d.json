@@ -1,0 +1,1 @@
+{"ast":null,"code":"var __jsx = React.createElement;\nimport React from 'react';\nimport Error from 'next/error';\n\nfunction ErrorPage() {\n  return __jsx(Error, {\n    statusCode: 404\n  });\n}\n\nexport default ErrorPage;","map":null,"metadata":{},"sourceType":"module"}

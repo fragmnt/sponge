@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import RegistrationForm from '../src/Components/auth/register';
+import Navbar from '../src/Components/nav';
 
 class Register extends React.Component {
    
@@ -17,14 +18,11 @@ class Register extends React.Component {
    
     render() {
         return(
-            <>
-                <h1>Register to Sponge.id</h1>
-                <Link href="/login">
-                    <a>Log in</a>
-                </Link>
-                
+            <div id="hpg">
+                <Navbar/>
+                <h1>Sign up for Sponge</h1>
                 <RegistrationForm/>
-            </>
+            </div>
         )
     }
 }

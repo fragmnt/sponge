@@ -1,5 +1,6 @@
 import React from 'react';
 import { useForm } from "react-hook-form";
+import '../../styles/forms.css';
 
 const LoginForm = () => {
 
@@ -12,25 +13,31 @@ const LoginForm = () => {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-          <label>Email</label>
+         <div className="formBrk">
+          <label>Email</label><br/>
         <input
+        className="fInp"
           name="email"
           placeholder="example@domain.com"
           ref={register()}
         />
         {errors.email && errors.email.message}
+        </div>
 
-        <label>Password</label>
+        <div className="formBrk">
+        <label>Password</label><br/>
         <input
+        className="fInp"
           name="password"
           placeholder="••••••••••"
           ref={register()}
         />
         {errors.email && errors.email.message}
+        </div>
 
-        <button type="submit">Log in</button>
+        <button className="bbtn" type="submit">Log in</button>
       </form>
-    )
+    );
 }
 
 export default LoginForm;
