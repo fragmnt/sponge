@@ -10,7 +10,10 @@ class MyDocument extends Document {
   render() {
     return (
       <Html>
-        <Head />
+        <Head>
+          <link rel="shortcut icon" href="/favicon.png" />
+          <title>Sponge | Create E-Commerce Web Pages via PayID</title>
+        </Head>
         <body>
           <Main />
           <NextScript />

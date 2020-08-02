@@ -12,6 +12,7 @@ async function redisConnector(ffy, opts, done) {
             password: env.REDIS_PASSWORD,
         };
         const r = new Redis(config);
+        await r;
         console.log('.: Service :: Redis is connected...');
         ffy.decorate('redis', r);
     } catch (err) {

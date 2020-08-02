@@ -1,5 +1,6 @@
 import React from 'react';
 import LoginForm from '../src/Components/auth/login';
+import Link from 'next/link';
 
 class Login extends React.Component {
 
@@ -11,15 +12,18 @@ class Login extends React.Component {
     };
 
     componentDidMount = () => {
-
+        window.document.title = "Log in to Sponge";
     };
    
     render() {
         return(
-            <>
-                <h1>Login to Sponge.id</h1>
+            <div id="login-pg">
+                <h1>Log in to Sponge</h1>
                 <LoginForm/>
-            </>
+                <p>Don't have an account yet?<Link href="/register">
+                   <a>Sign up</a>
+                </Link></p>
+            </div>
         )
     }
 }

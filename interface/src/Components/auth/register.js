@@ -12,8 +12,11 @@ const RegistrationForm = () => {
     
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
+
+        <label>Email</label>
         <input
           name="email"
+          placeholder="example@domain.com"
           ref={register({
             required: "Required",
             pattern: {
@@ -24,7 +27,9 @@ const RegistrationForm = () => {
         />
         {errors.email && errors.email.message}
 
+        <label>Password</label>
         <input
+          placeholder="••••••••••"
           name="password"
           ref={register({
             required: "Required",
@@ -36,8 +41,10 @@ const RegistrationForm = () => {
         />
         {errors.email && errors.email.message}
   
+        <label>Username</label>
         <input
           name="username"
+          placeholder="Your username"
           ref={register({
               required: "Required",
               pattern: {
@@ -49,7 +56,7 @@ const RegistrationForm = () => {
         />
         {errors.username && errors.username.message}
   
-        <button type="submit">Submit</button>
+        <button type="submit">Create my store</button>
       </form>
     )
 }

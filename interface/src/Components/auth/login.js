@@ -12,19 +12,23 @@ const LoginForm = () => {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
+          <label>Email</label>
         <input
           name="email"
+          placeholder="example@domain.com"
           ref={register()}
         />
         {errors.email && errors.email.message}
 
+        <label>Password</label>
         <input
           name="password"
+          placeholder="••••••••••"
           ref={register()}
         />
         {errors.email && errors.email.message}
 
-        <button type="submit">Submit</button>
+        <button type="submit">Log in</button>
       </form>
     )
 }
