@@ -20,6 +20,8 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 - [x] GraphQL and REST-based transport layer
 - [x] 'Serverless checkout'
 - [x] Create merchant accounts, products and orders
+- [x] Web3/Fortmatic login and support
+- [x] Xpring-js (PayID) integration
 
 ## Hierarchy
 
