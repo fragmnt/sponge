@@ -59,7 +59,30 @@ const routes = [
         preValidation: controller.middleware,
     },
     // orders
-
+    {
+        method: 'POST',
+        url: '/product/:url/checkout',
+        handler: controller.createOrder,
+        preValidation: controller.middleware,
+    },
+    {
+        method: 'POST',
+        url: '/orders/track/:customerUrl/cancel',
+        handler: controller.cancelOrder,
+        preValidation: controller.middleware,
+    },
+    {
+        method: 'GET',
+        url: '/storefront/:url/orders',
+        handler: controller.getAllOrdersFromStorefront,
+        preValidation: controller.middleware,
+    },
+    {
+        method: 'GET',
+        url: '/storefront/:url/customers',
+        handler: controller.getAllCustomersFromStorefront,
+        preValidation: controller.middleware,
+    },
     // ...
 ];
 

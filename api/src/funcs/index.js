@@ -1,5 +1,5 @@
 const {
-    Merchant, Order, BillingProfile, Product, Storefront, Session
+    Merchant, Order, BillingProfile, Product, Storefront, Session, Payment
 } = require('../models');
 
 const bcrypt = require('../utils/bcrypt');
@@ -10,6 +10,7 @@ const s3 = require('../utils/s3');
 const goose = require('mongoose');
 const sid = require('shortid');
 const reqIp = require('request-ip');
+const crypto = require('crypto-js');
 
 module.exports = {
     root: (req, reply) => {
@@ -147,7 +148,7 @@ module.exports = {
         // confirm password and get new tokens
     },
     // connect payid, xrp, ilp wallet
-    // connect web3
+    // connect web3/formatic
 
     /**
      * SETTINGS
@@ -201,6 +202,7 @@ module.exports = {
         .send({ storefront: sf });
     },
     getStorefront: async (req, reply) => {
+        // RBU: mark as a visit in kv store (redis) for analytics
         var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
         var authStatus = await jwt.validate(token);
         var d = new Date(0);
@@ -289,7 +291,7 @@ module.exports = {
         return reply
         .code(200)
         .send({ product: p });
-    },
+    }, // EDIT THIS
     getAllProductsFromStorefront: async (req, reply) => {
         var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
         var authStatus = await jwt.validate(token);
@@ -346,14 +348,159 @@ module.exports = {
     // delete
 
     /**
-     * ORDERS, PAYID integration, event dispatch to redis-bull before resp
+     * ORDERS, PAYID integration, **event dispatch to redis-bull before resp
      */
-    createOrder: async () => {
+    createOrder: async (req, reply) => {
+        // **RBU: mark as a purchase in kv store (redis) for analytics
         // after order is created, a payment model is created to process it.
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var input = { 
+            //...form.data
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            company: req.body.company,
+            address1: req.body.address1,
+            address2: req.body.address2,
+            city: req.body.city,
+            postcode: req.body.postcode,
+            country: req.body.country, 
+            state: req.body.state,    
+            email: req.body.email,
+            phoneNumber: req.body.phoneNumber,
+        }; 
+
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var sf = await Storefront.findOne({ merchant_id: m._id });
+        var p = await Product.find({ url: req.params.url }).where({ storefront_id: sf._id });
+        p = p[0];
+        
+        // create order & billing profile from product + input info
+        var o = new Order({
+            _id: goose.Types.ObjectId(),
+            orderNumber: crypto.lib.WordArray.random(6),
+            product_id: p._id,
+            storefront_id: sf._id,
+            customerUrl: sid.generate() + crypto.lib.WordArray.random(12) + sid.generate(),
+            totalPrice: p.price,
+            paymentMethod: 0,
+        });
+        var bp = new BillingProfile({
+            _id: goose.Types.ObjectId(),
+            order_id: o._id,
+            paymentMethod: 0,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            company: input.company,
+            address1: input.address1,
+            address2: input.address2,
+            city: input.city,
+            postcode: input.postcode,
+            country: input.country, 
+            state: input.state,    
+            email: input.email,
+            phoneNumber: input.phoneNumber,
+        });
+        var pay = new Payment({
+            _id: goose.Types.ObjectId(),
+        });
+
+        o.billingProfile = bp;
+        o.payment = pay;
+        await o.save();
+
+        return reply
+        .code(200)
+        .headers('Content-Type', 'application/json; charset=utf-8')
+        .send({ product: p, order: o})
     },
     processOrder: async () => {},
     fulfillOrder: async () => {},
-    cancelOrder: async () => {},
-    // getAllOrdersFromStorefrontId
-    // 
+    cancelOrder: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var input = {
+            cancellationReason: req.body.cancelReason,
+        }
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        const update = {
+            isCanceled: true,
+            cancelReason: input.cancellationReason,
+        };
+
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var o = await Order.findOneAndUpdate({ customerUrl: req.params.customerUrl }, update, {
+            new: true,
+            returnOriginal: false,
+        });
+
+        return reply.code(201).send({
+            order: o,
+        })
+    },
+    getAllOrdersFromStorefront: async (req, reply) => {
+        // getAllOrdersFromStorefrontId
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var sf = await Storefront.findOne({ storefrontAliasURL: req.params.url, merchant_id: m._id });
+        var o = await Order.find().where({ storefront_id: sf._id });
+
+        return reply
+        .code(200)
+        .send({
+            orders: o,
+        })
+    },
+    getAllCustomersFromStorefront: async (req, reply) => {
+        // getAllCustomersFromStorefrontId --- query all orders and parse billingProfile subschema
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var sf = await Storefront.findOne({ storefrontAliasURL: req.params.url, merchant_id: m._id });
+        var o = await Order.find().where({ storefront_id: sf._id });
+        var c = [];
+        o.forEach((order, index) => {
+            c.push(order.billingProfile);
+        });
+
+        return reply
+        .code(200)
+        .send({
+            customers: c,
+        })
+    },
+
+    /**
+     * VIEW PAYMENT HISTORY VIA XPRINGJS,LOGIN WITH WEB3, ..access scopes
+     */
 };

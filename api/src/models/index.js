@@ -4,6 +4,7 @@ const {Product} = require('./product.model');
 const {Order} = require('./order.model');
 const {Session} = require('./session.model');
 const {BillingProfile} = require('./billing.model');
+const {Payment} = require('./payment.model');
 
 module.exports = {
     Merchant,
@@ -11,5 +12,6 @@ module.exports = {
     Product,
     Order,
     Session,
-    BillingProfile
+    BillingProfile,
+    Payment
 };

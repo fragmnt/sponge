@@ -1,7 +1,7 @@
 require('dotenv').config();
 const env = process.env;
 const ffy = require('fastify')({ logger: true });
-const mc = ffy.minio();
+const mc = require('../plugins/minio');
 
 var bucket = "product-photos";
 var policy = `{

@@ -24,7 +24,6 @@ const billingSchema = new Schema({
     },
     payId: {
         type: String,
-        required: true,
     },
     paymentMethod: {
         type: Number,
@@ -39,4 +38,5 @@ const BillingProfile = mongoose.model('BillingProfile', billingSchema);
 
 module.exports = {
     BillingProfile,
+    billingSchema
 };
