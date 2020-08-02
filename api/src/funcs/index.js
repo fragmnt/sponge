@@ -244,6 +244,9 @@ module.exports = {
         .code(200)
         .send({ storefronts: sfs });
     },
+    deleteStorefront: async (req, reply) => {},
+    archiveStorefront: async (req, reply) => {},
+    backupAndExportStorefront: async (req, reply) => {},
     // update
     // delete
 
@@ -291,7 +294,7 @@ module.exports = {
         return reply
         .code(200)
         .send({ product: p });
-    }, // EDIT THIS
+    },
     getAllProductsFromStorefront: async (req, reply) => {
         var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
         var authStatus = await jwt.validate(token);
@@ -346,6 +349,8 @@ module.exports = {
     },
     // update
     // delete
+        removeProduct: async (req, reply) => {},
+        archiveProduct: async (req, reply) => {},
 
     /**
      * ORDERS, PAYID integration, **event dispatch to redis-bull before resp

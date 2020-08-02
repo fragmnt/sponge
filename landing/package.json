@@ -12,5 +12,13 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "webpack": "^4.44.1"
+  },
+  "scripts": {
+    "dev": "next",
+    "start": "next start",
+    "build": "next build",
+    "export": "next export",
+    "storybook": "start-storybook -s ./public/static -p 6006",
+    "build-storybook": "build-storybook -s ./public/static  -c .storybook -o .storybookout"
   }
 }

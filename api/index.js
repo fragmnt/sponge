@@ -6,6 +6,7 @@ const ffyMultipart = require('fastify-formbody');
 const ffy = require('fastify')({ logger: true });
 const mongo = require('./src/plugins/mongo');
 const minio = require('./src/plugins/minio');
+const redis = require('./src/plugins/redis');
 
 const env = process.env;
 
@@ -19,6 +20,7 @@ ffy.register(ffySession, {
 });
 ffy.register(mongo);
 ffy.register(minio);
+ffy.register(redis);
 
 const routes = require('./src/routes');
 routes.forEach((route, index) => {

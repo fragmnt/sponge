@@ -25,9 +25,13 @@ const billingSchema = new Schema({
     payId: {
         type: String,
     },
+    
     paymentMethod: {
         type: Number,
     },
+    walletProvider: {type: String, default: "fortmatic"},
+    xrpAddress: String,
+
     order_id: {
         type: ObjectID,
         required: true,

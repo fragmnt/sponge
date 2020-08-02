@@ -25,6 +25,7 @@ var policy = `{
 }`;
 
 const uploadProductPhotoFromBuffer = async (imageBuffer, fileName) => {
+      // ..react-dropzone sends file to api which forwards to this function
         // var buffer = "";
         // var file = Buffer.from(buffer, 'hex');
         
