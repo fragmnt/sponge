@@ -1,10 +1,11 @@
 const {
-    Merchant, Order, Product, Storefront, Session
+    Merchant, Order, BillingProfile, Product, Storefront, Session
 } = require('../models');
 
 const bcrypt = require('../utils/bcrypt');
 const jwt = require('../utils/jwt');
 const ses = require('../utils/sessions');
+const s3 = require('../utils/s3');
 
 const goose = require('mongoose');
 const sid = require('shortid');
@@ -36,7 +37,7 @@ module.exports = {
         
         var pswdHash;
         try {
-            pswdHash = bcrypt.hashPassword(input.pswd);
+            pswdHash = await bcrypt.hashPassword(input.pswd);
         } catch (err) {
             return reply
             .code(504)
@@ -52,8 +53,13 @@ module.exports = {
             createdAt: Date.now(),
         });
 
-        await m.save();
-
+        try {
+            await m.save();
+        } catch(err) {
+            return reply
+            .code(504)
+            .send({ err: "Could not create user account. Please try editting your fields and submitting again." });
+        }
         // generate sessionId and access/refresh tokens
         var sid = await ses.generate(m._id, input.ip);
         var atok = await jwt.generate(m._id);
@@ -61,12 +67,13 @@ module.exports = {
 
         // create session on database
         var sesh = new Session({
-            sessionId: sid,
+            _id: goose.Types.ObjectId(),
+            sessionId: sid.toString(),
             user_id: m._id,
             createdAt: Date.now(),
             ipAddress: input.ip,
             hostName: input.host,
-        });     
+        });
         await sesh.save();
 
         return reply
@@ -139,11 +146,22 @@ module.exports = {
     reauthorize: (req, reply) => {
         // confirm password and get new tokens
     },
+    // connect payid, xrp, ilp wallet
+    // connect web3
+
+    /**
+     * SETTINGS
+     */
+
+     // changePassword
+     // updateEmail
+     // closeAccount
+     // logout of other sessions
+     // dis::connect payID or configure payment settings
     
     /** 
      * STOREFRONTS
      */
-    
     createStorefront: async (req, reply) => {
         var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
         var input = {
@@ -205,50 +223,137 @@ module.exports = {
             .send({ storefront: retrieved });
         }
     },
-    
-    /* 
-        * UPLOAD NEW PFP TO MINIO BUCKET
-        *  AND ADD DATA TO DOCUMENT FIELD IN MONGO 
-    */
-    uploadPfp: (req, reply) => {
-        // var buffer = "";
-        // var file = Buffer.from(buffer, 'hex');
-        
-       /* console.log(mc);
-        
-        var fileName = "icon.png";
-        var fileLocation = `./${fileName}`;
-        var bucketNameInput = "dogg"
-        
-        const uploadFile = async () => {
-            
-            await mc.makeBucket(bucketNameInput.toString(), 'us-east-1', (err) => {
-                if (err) return console.log(err);
-                console.log('bucket created successfully');
-            });
-            
-            var metadata = {
-                'Content-Type': 'application/octet-stream',
-                'X-Amz-Meta-Testing': 1234,
-                'example': 5678
-            };
-            
-            // Using fPutObject API upload your file to the bucket europetrip.
-            await mc.fPutObject(bucketNameInput, fileName, fileLocation, metadata, (err, etag) => {
-              if (err) return console.log(err)
-              console.log('File uploaded successfully.');
-              console.log(etag);
-            });
+    getAllStorefrontsByMerchant: async (req, reply) => {
+       var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
         };
-        
-        uploadFile(); */
-    },
-    generateShortUrl: (req, reply) => {
-        const shortcut = sid.generate();
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var sfs = await Storefront.find().where({
+            merchant_id: m._id
+        });
+
         return reply
         .code(200)
-        .header('Content-Type', 'application/json; charset=utf-8')
-        .send({ url: `https://sponge.id/shop/${shortcut}`});
-        // redirect();
-    }
+        .send({ storefronts: sfs });
+    },
+    // update
+    // delete
+
+    /**
+     * PRODUCTS
+     */
+    createNewProduct: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        // check for input if not return
+        var input = {
+            name: req.body.name,
+            desc: req.body.description,
+            price: req.body.price,
+            image: req.body.image
+            // req.body.value
+        }; 
+        const shortcut = sid.generate();
+
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        var m = await Merchant.findOne({ _id: authStatus.user });
+        var sf = await Storefront.find().where({ merchant_id: m._id });
+        
+        // ...use minio utils to upload image buffer input to bucket
+        const productImgURL = await s3.uploadProductPhotoFromBuffer(input.image, sf.storefrontAliasURL);
+        
+        var p = new Product({
+            _id: goose.Types.ObjectId(),
+            storefront_id: sf[0]._id,
+            name: input.name,
+            description: input.desc,
+            price: input.price,
+            imageURL: productImgURL,
+            url: shortcut
+        });
+        await p.save();
+
+        return reply
+        .code(200)
+        .send({ product: p });
+    },
+    getAllProductsFromStorefront: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        var retrieved = await Storefront.findOne({ storefrontAliasURL: req.params.alias });
+        
+        if (!retrieved){
+            reply.code(401).send({
+                msg: "No products were found."
+            });
+        } else {
+            var ps = await Product.find().where({
+                storefront_id: retrieved._id
+            });
+                return reply
+            .code(200)
+            .header('Content-Type', 'application/json; charset=utf-8')
+            .send({ products: ps });
+        };
+    },
+    getProductByURL: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+        // get one product by id /product/:url
+        var productShortcode = req.params.url;
+        var retrieved = await Product.findOne({ url: productShortcode });
+        
+        if (!retrieved){
+            reply.code(401).send({
+                msg: "No products were found."
+            });
+        } else {
+                return reply
+            .code(200)
+            .header('Content-Type', 'application/json; charset=utf-8')
+            .send({ product: retrieved });
+        };
+    },
+    // update
+    // delete
+
+    /**
+     * ORDERS, PAYID integration, event dispatch to redis-bull before resp
+     */
+    createOrder: async () => {
+        // after order is created, a payment model is created to process it.
+    },
+    processOrder: async () => {},
+    fulfillOrder: async () => {},
+    cancelOrder: async () => {},
+    // getAllOrdersFromStorefrontId
+    // 
 };

@@ -8,9 +8,12 @@ const storefrontSchema = new Schema({
     },
     name: {
         type: String,
+        required: true
     },
-    storefrontAliasURL: {
+    storefrontAliasURL: { // aka subdomain or just 'alias'
         type: String,
+        unique: true,
+        required: true
     },
     isPrivate: {
         type: Boolean,
@@ -23,7 +26,22 @@ const storefrontSchema = new Schema({
     createdOn: {
         type: Date,
         required: true
-    }
+    },
+    primaryCurrency: {
+        type: Number
+    },
+    supportEmail: {
+        type: String,
+        default: ""
+    },
+    logoUrl: {
+        type: String,
+        required: false,
+    },
+    coverImageURL: {
+        type: String,
+        required: false
+    },
 
 }, () => {
 

@@ -7,6 +7,7 @@ const routes = [
         url: '/',
         handler: controller.root
     },
+    // auth
     {
         method: 'POST',
         url: '/register',
@@ -17,14 +18,9 @@ const routes = [
         method: 'POST',
         url: '/login',
         handler: controller.login
-        // schema
+        //  options == schema
     },
-    /*{
-        method: 'GET',
-        url: '/:storefront_url',
-        // handler: controller,
-        // options == schema
-    },*/
+    // storefronts
     {
         method: 'POST',
         url: '/storefront/create',
@@ -33,10 +29,38 @@ const routes = [
     },
     {
         method: 'GET',
-        url: '/storefront/:alias',
+        url: '/storefront/:alias', // https://sponge.id/shop/:alias
         handler: controller.getStorefront,
         preValidation: controller.middleware,
-    }
+    },
+    {
+        method: 'GET',
+        url: '/my/storefronts',
+        handler: controller.getAllStorefrontsByMerchant,
+        preValidation: controller.middleware,
+    },
+    // products
+    {
+        method: 'POST',
+        url: '/product/new',
+        handler: controller.createNewProduct,
+        preValidation: controller.middleware,
+    },
+    {
+        method: 'GET',
+        url: '/product/:url',
+        handler: controller.getProductByURL,
+        preValidation: controller.middleware,
+    },
+    {
+        method: 'GET',
+        url: '/storefront/:alias/products',
+        handler: controller.getAllProductsFromStorefront,
+        preValidation: controller.middleware,
+    },
+    // orders
+
+    // ...
 ];
 
 module.exports = routes;
