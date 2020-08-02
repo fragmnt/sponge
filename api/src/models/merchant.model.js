@@ -7,9 +7,17 @@ const merchantSchema = new Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
-    username: String,
-    password: String,
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
     isAdmin: Boolean,
     payId: {
         type: String,

@@ -13,7 +13,7 @@ const generate = (payload) => {
     };
     // HS256
     var accessToken = jwt.sign(signage, secret, {
-        expiresIn: env.ACCESS_TOKEN_LIFETIME,
+        expiresIn: 1440160,
         subject: env.CLIENT_ID
     });
     return accessToken;
@@ -24,6 +24,8 @@ const generate = (payload) => {
  */
 const validate = (token) => {
     // .. receive existing token and validate it
+    var confirmation = jwt.verify(token, secret);
+    return confirmation;
 };
 
 /**

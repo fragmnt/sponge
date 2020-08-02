@@ -9,12 +9,20 @@ const storefrontSchema = new Schema({
     name: {
         type: String,
     },
-    short_url: {
+    storefrontAliasURL: {
         type: String,
     },
     isPrivate: {
         type: Boolean,
         default: true, // method toggles this to make storefront public
+    },
+    merchant_id: {
+        type: ObjectID,
+        required: true,
+    },
+    createdOn: {
+        type: Date,
+        required: true
     }
 
 }, () => {

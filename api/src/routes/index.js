@@ -5,7 +5,7 @@ const routes = [
     {
         method: 'GET',
         url: '/',
-        handler: controller.generateShortUrl
+        handler: controller.root
     },
     {
         method: 'POST',
@@ -14,11 +14,29 @@ const routes = [
         // schema: x-www-form-urlencoded
     },
     {
+        method: 'POST',
+        url: '/login',
+        handler: controller.login
+        // schema
+    },
+    /*{
         method: 'GET',
         url: '/:storefront_url',
-        handler: controller.login,
+        // handler: controller,
         // options == schema
+    },*/
+    {
+        method: 'POST',
+        url: '/storefront/create',
+        handler: controller.createStorefront,
+        preValidation: controller.middleware,
     },
+    {
+        method: 'GET',
+        url: '/storefront/:alias',
+        handler: controller.getStorefront,
+        preValidation: controller.middleware,
+    }
 ];
 
 module.exports = routes;

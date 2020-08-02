@@ -17,8 +17,11 @@ module.exports = {
         .send({ msg: "Welcome to the Sponge REST API"})
         .header('Content-Type', 'application/json; charset=utf-8');
     },
+    middleware: (req, reply, done) => {
+        done();
+    },
     /**
-     * CREATE NEW MERCHANT ACCOUNT
+     * CREATE NEW, LOGIN, REAUTH & RESET MERCHANT ACCOUNT
      */
     register: async (req, reply) => {
         
@@ -40,47 +43,173 @@ module.exports = {
             .send({ err: "Could not hash password" });
         };
 
+        // create user on database
         var m = new Merchant({
+            _id: goose.Types.ObjectId(), 
             email: input.email,
             password: pswdHash,
             username: input.alias,
             createdAt: Date.now(),
         });
-        // create user on database
+
+        await m.save();
 
         // generate sessionId and access/refresh tokens
-        var sid = await ses.generate(m.username, input.ip);
+        var sid = await ses.generate(m._id, input.ip);
+        var atok = await jwt.generate(m._id);
+        var rtok = await jwt.refresh(atok);
+
+        // create session on database
         var sesh = new Session({
             sessionId: sid,
             user_id: m._id,
             createdAt: Date.now(),
             ipAddress: input.ip,
             hostName: input.host,
-        });
-        var atok = await jwt.generate(m.username);
-        var rtok = await jwt.refresh(atok);
+        });     
+        await sesh.save();
 
         return reply
             .code(200)
             .header('Content-Type', 'application/json; charset=utf-8')
-            .send({ merchant: m, session: sesh, tokens: {
-                access: atok,
-                refresh: rtok,
-            }, session_id: sesh.sessionId
+            .send({ 
+                session_id: sesh.sessionId,
+                tokens: {
+                    access: atok,
+                    refresh: rtok,
+                    // expiresIn
+                    // tokenType : Bearer
+                },
+                user: {
+                    id: m._id,
+                    email: m.email, 
+                    payId: m.payId,
+                    username: m.username,
+                    createdAt: m.createdAt,
+                }
+            });
+    },
+    login: async (req, reply) => {
+        const input = {
+            email: req.body.email,
+            pswd: req.body.password, 
+            ip: reqIp.getClientIp(req),
+        };
+        // find if user exists, validate password hash
+        var m = await Merchant.findOne({
+            email: input.email
         });
+
+        var isAuthenicated = await bcrypt.checkPassword(input.pswd, m.password);
+        if (isAuthenicated === true) {
+            // generate sessionId and access tokens
+
+            var sid = await ses.generate(m._id, input.ip).toString();
+            var atok = await jwt.generate(m._id);
+            var rtok = await jwt.refresh(atok);
+
+            return reply
+                .code(200)
+                .header('Content-Type', 'application/json; charset=utf-8')
+                .send({
+                    session_id: sid,
+                    tokens: {
+                        access: atok,
+                        refresh: rtok,
+                    },
+                    user: {
+                        email: m.email, 
+                        payId: m.payId,
+                        username: m.username,
+                    }
+                });
+        } else {
+            return reply 
+            .code(401)
+            .header('Content-Type', 'application/json; charset=utf-8')
+            .send({ msg: "Could not login user. Incorrect password."})
+        };
     },
-    /**
-     * LOGIN EXISTING MERCHANT ACCOUNT
+    resetPassword: (req, reply) => {
+        const input = {
+            email: req.body.email,
+        };
+        return reply;
+    },
+    reauthorize: (req, reply) => {
+        // confirm password and get new tokens
+    },
+    
+    /** 
+     * STOREFRONTS
      */
-    login: (req, reply) => {
-          // get long_url
-        var long_url = "";
-        return reply.redirect(long_url);
+    
+    createStorefront: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var input = {
+            name: req.body.storefrontName,
+            alias: req.body.alias,
+        };
+
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        var retrieved = await Merchant.findOne({ _id: authStatus.user });
+        var m = {
+            id: retrieved._id,
+            email: retrieved.email,
+            username: retrieved.username,
+            createdAt: retrieved.createdAt,
+            payId: retrieved.payId
+        };
+
+        var sf = new Storefront({
+            _id: goose.Types.ObjectId(),
+            name: input.name,
+            storefrontAliasURL: input.alias,
+            merchant_id: m.id,
+            createdOn: Date.now(),
+        });
+        await sf.save();
+        // create storefront with input and id
+        return reply
+        .code(200)
+        .send({ storefront: sf });
     },
-    relogin: (req, reply) => {},
+    getStorefront: async (req, reply) => {
+        var token = req.headers['x-access-token'] || (req.query && req.query.access_token) || (req.body && req.body.access_token);
+        var authStatus = await jwt.validate(token);
+        var d = new Date(0);
+        d.setUTCSeconds(authStatus.exp);
+        if (d <= Date.now()) {
+            reply.code(400).send({
+                err: "Access token has expired."
+            })
+        };
+
+        var retrieved = await Storefront.findOne({ storefrontAliasURL: req.params.alias });
+        
+        if (!retrieved){
+            reply.code(401).send({
+                msg: "No store was found."
+            });
+        } else {
+                return reply
+            .code(200)
+            .send({ storefront: retrieved });
+        }
+    },
+    
     /* 
         * UPLOAD NEW PFP TO MINIO BUCKET
-        *  AND ADD DATA TO DOCUMENT FIELD IN MONGO */
+        *  AND ADD DATA TO DOCUMENT FIELD IN MONGO 
+    */
     uploadPfp: (req, reply) => {
         // var buffer = "";
         // var file = Buffer.from(buffer, 'hex');
@@ -120,5 +249,6 @@ module.exports = {
         .code(200)
         .header('Content-Type', 'application/json; charset=utf-8')
         .send({ url: `https://sponge.id/shop/${shortcut}`});
+        // redirect();
     }
 };
