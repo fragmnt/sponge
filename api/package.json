@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "BSD-3-Clause",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "@hapi/boom": "^9.1.0",
     "assemblyscript": "^0.14.7",
