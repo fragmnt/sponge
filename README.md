@@ -31,10 +31,16 @@ Sponge is an open-source mobile ecommerce service for social media, layered on t
 4. `workers` - bull
 5. `services` - redis, minio, payid
 6. `database` - mongodb
-7. `infra` - vps, ubuntu server distro
 
 
 ## Hosted vs. Self-Hosted
+
+API: https://api.sponge.id/
+Minio S3: https://img.sponge.id/
+Web App: https://app.sponge.id
+Redis: {server_host}:6379
+PayID: https://sponge.id | https://sponge.id:8081
+Mongo: {atlas_hosted_url}
 
 ...
 
