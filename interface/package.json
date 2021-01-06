@@ -6,7 +6,7 @@
   "license": "BSD3",
   "dependencies": {
     "@zeit/next-css": "^1.0.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bent": "^7.3.9",
     "next": "^9.5.1",
     "next-images": "^1.4.1",
