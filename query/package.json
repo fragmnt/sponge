@@ -6,7 +6,7 @@
   "dependencies": {
     "apollo-link-context": "^1.0.20",
     "apollo-link-http": "^1.5.17",
-    "apollo-server": "^2.16.1",
+    "apollo-server": "^2.25.4",
     "graphql": "^15.3.0",
     "graphql-tools": "^6.0.15",
     "graphql-yoga": "^1.18.3"
